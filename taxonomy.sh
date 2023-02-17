@@ -8,7 +8,7 @@
 export BLASTDB=/home/josemari/Desktop/Jose/Reference_sequences/Reference_virus_DB/ref_viruses_rep_genomes
 blastN_db="ref_viruses_rep_genomes"
 # Get the path to the paired end fastq files.
-data_path="/home/josemari/Desktop/Jose/Tests/taxonomy_test"
+data_path="/home/josemari/Desktop/Jose/Projects/Illumina_taxonomy/Data/NetoVIR_run_2.1_NIBSC_panel"
 # Define the illumina suffix for forward and reverse reads.
 Fr_suffix="_R1_001.fastq.gz"
 Rv_suffix="_R2_001.fastq.gz"
@@ -43,9 +43,9 @@ for i in "${files[@]}"; do
   echo -e "Removing adapters and merging ${i}${Fr_suffix} ${i}${Rv_suffix} with AdapterRemoval...\n"
   AdapterRemoval --file1 ${data_path}/${i}${Fr_suffix} --file2 ${data_path}/${i}${Rv_suffix} --basename output_paired --trimns --trimqualities --collapse
   
-  # Convert the merged fastq to fasta file.
-  echo -e "Calling fastq_to_fasta.R for ${i} to produce ${i}.fasta...\n" 
-  Rscript fastq_to_fasta.R `pwd`/output_paired.collapsed
+  # Converting the merged fastq to fasta file.
+  echo -e "Converting the ${i} merged fastq to fasta with seqtk...\n" 
+  seqtk seq -a output_paired.collapsed > pefq_merged.fasta
   
   # Nucleotide Blast the fasta file. The outfmt string specifies which columns to get on the output. The -evalue 0.01 is a conservative value significant match reads.
   echo -e "Blasting ${i} with blastn...\n"
@@ -63,5 +63,7 @@ for i in "${files[@]}"; do
   mkdir ${i}_result
   mv taxon_piechart.pdf taxon_results.csv pefq_merged.fasta output_paired.collapsed blastn_output.tab ${i}_result
   rm out*
+  
+  echo -e "SAMPLE ${i} analysis finished\n"
   
 done

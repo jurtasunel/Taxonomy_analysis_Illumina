@@ -1,6 +1,5 @@
-### This script reads in an fmt6 blast output file and produces a taxonomy report consisting on two files:
-### 1: taxon_results.csv with the NCBI, taxonID and number of read matches for each organism.
-### 2: taxon_piechart.pdf with a pie chart showing the most frequent organisms.
+### This script reads in an fmt6 blast output file and produces a taxonomy report file that consists on:
+### A taxon_results.csv with the NCBI, taxonID and number of read matches for each organism.
 ### The script uses tazonomizr to do the analysis.
 
 library(dplyr)
@@ -64,39 +63,4 @@ for (i in 2:nrow(tax_result)){
 filtered_res <- filtered_res %>% mutate(Percentage = 100 * Frequency/sum(Frequency))
 # Write out csv with the filtered taxonomy results.
 write.csv(filtered_res, file = "taxon_results.csv", row.names = FALSE)
-
-print("Ploting results to produce taxon_piechart.pdf...")
-# Start a count at 0 and get the index for the first row.
-cnt <- 0
-i.row = 1;
-# While the count is below 95:
-while (cnt < 95) {
-  # Add the Percentage of the current row and update the row index.
-  cnt = cnt + filtered_res[i.row, "Percentage"]
-  i.row=i.row+1
-}
-
-# Make a plot df with only the top 95 representatives of the taxonomy.
-plot_df <- filtered_res[1:i.row,]
-# Make a row to store the "others" data.
-others <- c("", sum(filtered_res$Frequency[(i.row+1):nrow(filtered_res)]), "", "Others", 100-cnt)
-plot_df <- rbind(plot_df, others)
-# Save the amount of rows summarized in others.
-others_length <- nrow(filtered_res[(i.row+1):nrow(filtered_res),])
-
-# Get the desired number of colours.
-number_of_colors <- nrow(filtered_res)
-mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(number_of_colors)
-
-# Create the pie chart:
-taxon_pie <- ggplot(plot_df, aes(x="", y=Percentage, fill=Organism)) + geom_bar(stat="identity", width=1) + # basic bar plot.
-  coord_polar("y", start=0) + geom_text(aes(label = paste0(round(as.numeric(Percentage), 2), "%")), position = position_stack(vjust = 0.5)) + # Circular coord and labels. 
-  theme_void() +
-  labs(x = NULL, y = NULL, fill = NULL) +
-  scale_fill_manual(values = mycolors, breaks = as.character(plot_df$Organism)) +  # Rearrange legend on decreasing freq.
-  labs(caption = (paste0("*There are ", others_length, " organisms grouped in 'Others'"))) +
-  theme(plot.margin = unit(c(10,5,10,5), "mm"))
-
-ggsave("taxon_piechart.pdf", taxon_pie, width = 10, height = 10, dpi = 10, limitsize = FALSE)
-
 

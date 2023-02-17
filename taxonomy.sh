@@ -8,7 +8,7 @@
 export BLASTDB=/home/josemari/Desktop/Jose/Reference_sequences/Reference_virus_DB/ref_viruses_rep_genomes
 blastN_db="ref_viruses_rep_genomes"
 # Get the path to the paired end fastq files.
-data_path="/home/josemari/Desktop/Jose/Projects/Illumina_taxonomy/Data/09_02_2023_NetoVir"
+data_path="/home/josemari/Desktop/Jose/Tests/taxonomy_test"
 # Define the illumina suffix for forward and reverse reads.
 Fr_suffix="_R1_001.fastq.gz"
 Rv_suffix="_R2_001.fastq.gz"
@@ -54,6 +54,10 @@ for i in "${files[@]}"; do
   # Perform the taxonomy analysis.
   echo -e "Calling taxonomy_analysis.R...\n"
   Rscript taxonomy_analysis.R `pwd`/blastn_output.tab
+  
+  # Plot the taxonomy analysis.
+  echo -e "Calling plot_piechart.R...\n"
+  Rscript plot_piechart.R `pwd`/taxon_results.csv `pwd`/blastn_output.tab
   
   # Make a result directory for the sample, move relevant result files and remove intermediates.
   mkdir ${i}_result
